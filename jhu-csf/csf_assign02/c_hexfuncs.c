@@ -42,4 +42,31 @@ void hex_format_offset(unsigned offset, char sbuf[])
 }
 
 
-     
+
+// Format a byte value (in the range 0-255) as string consisting
+// of two hex digits. The string is stored in sbuf.
+void hex_format_byte_as_hex(unsigned char byteval, char sbuf[]) {
+  
+  static const char hex_digits[] = "0123456789abcdef";
+
+  for (int i = 1; i >= 0; i--) {
+    sbuf[i] = hex_digits[byteval & 0xF];
+    byteval >>= 4;
+  }
+  sbuf[2] = '\0';
+}
+
+
+//Convert a byte value (in the range 0-255) to a printable character
+// value. If byteval is already a printable character, it is returned
+// unmodified. If byteval is not a printable character, then the
+// ASCII code for '.' should be returned.
+char hex_to_printable(unsigned char byteval) {
+  if ((int) byteval >= 32 && (int) byteval <= 126) {
+    return byteval;
+  } else {
+    char period = '.';
+    return (int) period;
+  }
+  
+}

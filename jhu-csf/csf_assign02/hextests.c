@@ -37,8 +37,8 @@ int main(int argc, char **argv) {
   TEST_INIT();
 
   TEST(testFormatOffset);
-  //TEST(testFormatByteAsHex);
-  //TEST(testHexToPrintable);
+  TEST(testFormatByteAsHex);
+  TEST(testHexToPrintable);
 
   TEST_FINI();
 
@@ -55,13 +55,13 @@ void testFormatOffset(TestObjs *objs) {
   ASSERT(0 == strcmp(buf, "abcd1234"));
 }
 
-// void testFormatByteAsHex(TestObjs *objs) {
-//   char buf[16];
-//   hex_format_byte_as_hex(objs->test_data_1[0], buf);
-//   ASSERT(0 == strcmp(buf, "48"));
-// }
+void testFormatByteAsHex(TestObjs *objs) {
+  char buf[16];
+  hex_format_byte_as_hex(objs->test_data_1[0], buf);
+  ASSERT(0 == strcmp(buf, "48"));
+}
 
-// void testHexToPrintable(TestObjs *objs) {
-//   ASSERT('H' == hex_to_printable(objs->test_data_1[0]));
-//   ASSERT('.' == hex_to_printable(objs->test_data_1[13]));
-// }
+void testHexToPrintable(TestObjs *objs) {
+  ASSERT('H' == hex_to_printable(objs->test_data_1[0]));
+  ASSERT('.' == hex_to_printable(objs->test_data_1[13]));
+}
