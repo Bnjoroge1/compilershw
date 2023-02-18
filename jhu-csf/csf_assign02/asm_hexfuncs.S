@@ -11,52 +11,87 @@ hex_read:
 	/ /* TODO: implement */
          ret
 
-	.globl hex_write_string
+
+.globl hex_write_string
 hex_write_string:
-	 /* TODO: implement */
-         ret
+  // push the registers onto the stack to preserve their values
+  push %rbp
+  push %rbx
+  push %rcx
+  push %rdx
+  push %rsi
+  push %rdi
+  
+  // set up the arguments for the write syscall
+  mov $1, %rax      // write syscall number
+  mov $1, %rdi      // stdout file descriptor
+  mov %rsi, %rdx    // buffer address
+  mov %rdx, %rcx    // buffer length
+  
+  // call the write syscall
+  syscall
+  
+  // print some log statements
+  mov $0x0a, %rdi   // newline character
+  mov $0x0a, %rsi   // newline character
+  lea .L1(%rip), %rdx // buffer address
+  mov $6, %rcx      // buffer length
+  call hex_write_string
+  mov $0x0a, %rdi   // newline character
+  mov $0x0a, %rsi   // newline character
+  lea .L2(%rip), %rdx // buffer address
+  mov $6, %rcx      // buffer length
+  call hex_write_string
+  
+  // restore the registers from the stack
+  pop %rdi
+  pop %rsi
+  pop %rdx
+  pop %rcx
+  pop %rbx
+  pop %rbp
+  
+  // return to the caller
+  ret
+  
+  .L1:
+  .string "BUFFER"
+  
+  .L2:
+  .string "LENGTH"
+
+
 
 	.globl hex_format_offset
 hex_format_offset:
 	/* TODO: implement */
 	ret
+
   .globl hex_format_byte_as_hex
+/* This function takes a byte value and returns a string with
+   the two digit hexadecimal representation of the byte value.
+   For example, if the byte value is 0x32, the string "32" is
+   returned. */
 hex_format_byte_as_hex:
-  hex_format_byte_as_hex:
-  # Save the caller's registers
-  pushq %rbp
-  movq %rsp, %rbp
-  pushq %rbx
-  pushq %rsi
-  pushq %rdi
 
-  # Load the parameters into registers
-  movb 8(%rbp), %sil   # byteval
-  movq 16(%rbp), %rdi  # sbuf
 
-  # Format the byte value as hexadecimal
-  movl $2, %ecx
-  movl $0, %ebx
-  .L1:
-    movzbl %sil, %edx
-    andl $0xF, %edx
-    movb hex_digits(,%rdx,1), %al
-    movb %al, (%rdi,%rbx,1)
-    
-    shrl $4, %esi
-    addl $1, %ebx
-    dec %ecx
-    jnz .L1
 
-  # Null terminate the string
-  movb $0, (%rdi,%rbx,1)
+   
 
-  # Restore the callee's registers
-  popq %rdi
-  popq %rsi
-  popq %rbx
-  leave
-  ret
+
+
+
+  
+
+  .globl hex_format_byte_as_printable
+
+//2. set up the arguments for the write syscall
+//3. call the write syscall
+//4. restore the registers from the stack
+//5. return to the caller
+
+
+
 
 	.globl hex_to_printable
 hex_to_printable:

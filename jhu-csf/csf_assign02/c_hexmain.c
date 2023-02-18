@@ -27,7 +27,7 @@ int main(void) {
         for (int i = n; i < 16; i++) {
             hex_write_string("   ");
         }
-        hex_write_string(" ");
+        hex_write_string("  ");
         for (int i = 0; i < n; i++) {
             char printable = hex_to_printable(data_buf[i]);
             hex_format_byte_as_hex(printable, sbuf);

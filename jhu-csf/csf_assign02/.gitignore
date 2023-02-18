@@ -6,3 +6,5 @@
 /casm_hexdump
 /depend.mak
 /solution.zip
+/.vscode
+/*.nfs

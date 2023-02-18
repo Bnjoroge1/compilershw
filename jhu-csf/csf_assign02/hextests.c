@@ -61,6 +61,7 @@ void testFormatOffset(TestObjs *objs) {
 void testFormatByteAsHex(TestObjs *objs) {
   char buf[16];
   hex_format_byte_as_hex(objs->test_data_1[0], buf);
+  //printf("buf = %s \n", buf);
   ASSERT(0 == strcmp(buf, "48"));
 }
 
