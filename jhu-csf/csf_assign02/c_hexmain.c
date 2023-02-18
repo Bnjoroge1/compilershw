@@ -21,19 +21,7 @@ int main(void) {
         for (int i = 0; i < n; i++) {
             hex_format_byte_as_hex(data_buf[i], sbuf);
             //remove any initial 0s
-            if (sbuf[0] == '0') {
-                //if n is not 16, then we need to add a space
-                // My output: 00000000: 00000 00000 00000 54 68 69 73 20 69 73 20 61 20 6c 6f 6e  ...This is a lon
-                //Expected: 00000000: 54 68 69 73 20 69 73 20 61 20 6c 6f 6e 67 65 72  This is a longer
-                if (i == 0 && n != 16) {
-                    hex_write_string(sbuf[1]);
-                }
-                
-                
-                hex_write_string(&sbuf[1]);
-            } else {
-                hex_write_string(sbuf);
-            }
+            hex_write_string(sbuf);
             hex_write_string(" ");
         }
         for (int i = n; i < 16; i++) {

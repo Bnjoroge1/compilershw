@@ -18,7 +18,7 @@ LDFLAGS = -no-pie
 %.o : %.S
 	gcc -c $(ASMFLAGS) $*.S -o $*.o
 
-all : c_hextests c_hexdump #asm_hextests
+all : c_hextests c_hexdump asm_hextests
 
 c_hextests : c_hexfuncs.o hextests.o tctest.o
 	gcc -o $@ $(LDFLAGS) c_hexfuncs.o hextests.o tctest.o
