@@ -26,8 +26,9 @@ void cleanup(TestObjs *objs) {
 
 // Prototypes for test functions
 void testFormatOffset(TestObjs *objs);
-//void testFormatByteAsHex(TestObjs *objs);
-//void testHexToPrintable(TestObjs *objs);
+void testFormatByteAsHex(TestObjs *objs);
+void testHexToPrintable(TestObjs *objs);
+void testRead(TestObjs *objs);
 
 int main(int argc, char **argv) {
   if (argc > 1) {
@@ -39,6 +40,7 @@ int main(int argc, char **argv) {
   TEST(testFormatOffset);
   TEST(testFormatByteAsHex);
   TEST(testHexToPrintable);
+  TEST(testRead);
 
   TEST_FINI();
 
@@ -48,6 +50,7 @@ int main(int argc, char **argv) {
 void testFormatOffset(TestObjs *objs) {
   (void) objs; // suppress warning about unused parameter
   char buf[16];
+  
   hex_format_offset(0x00000001u, buf);
   ASSERT(0 == strcmp(buf, "00000001"));
 
@@ -64,4 +67,13 @@ void testFormatByteAsHex(TestObjs *objs) {
 void testHexToPrintable(TestObjs *objs) {
   ASSERT('H' == hex_to_printable(objs->test_data_1[0]));
   ASSERT('.' == hex_to_printable(objs->test_data_1[13]));
+}
+void testRead(TestObjs *objs) {
+  char buf[16];
+  int n = hex_read(buf);
+  //read usingread() and compare the result with the test data
+  //int m = read(0, buf, 16);
+  //ASSERT(m == n);
+  //ASSERT(n == 16);
+  ASSERT(0 == strcmp(buf, objs->test_data_1));
 }

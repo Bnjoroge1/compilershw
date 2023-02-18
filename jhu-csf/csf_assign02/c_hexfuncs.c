@@ -16,14 +16,18 @@ unsigned hex_read(char data_buf[])
 // Write given nul-terminated string to standard output.
 void hex_write_string(const char s[])
 {
-     // get the length of the string
+    // get the length of the string
      int len = 0;
      while (s[len] != '\0')
      {
           len++;
      }
 
-     int n = write(1, s, len);
+     // write the string to standard output
+     write(1, s, len);
+
+     // add the nul-terminator
+     write(1, "\0", 1);
 }
 //// Format an unsigned value as an offset string consisting of exactly 8
 // hex digits.  The formatted offset is stored in sbuf, which must
@@ -54,6 +58,7 @@ void hex_format_byte_as_hex(unsigned char byteval, char sbuf[]) {
     byteval >>= 4;
   }
   sbuf[2] = '\0';
+  
 }
 
 
@@ -62,11 +67,15 @@ void hex_format_byte_as_hex(unsigned char byteval, char sbuf[]) {
 // unmodified. If byteval is not a printable character, then the
 // ASCII code for '.' should be returned.
 char hex_to_printable(unsigned char byteval) {
-  if ((int) byteval >= 32 && (int) byteval <= 126) {
+  // 1. check if byteval is a printable character
+  if (byteval >= 32 && byteval <= 126) {
+    // 2. if it is, return it
     return byteval;
   } else {
-    char period = '.';
-    return (int) period;
+    // 3. if it is not, return '.'
+    return '.';
   }
+
+  
   
 }

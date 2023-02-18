@@ -1,20 +1,7 @@
-// C implementation of hexdump main function
-
-#include "hexfuncs.h"  // this is the only header file which may be included!
-//expected output format:
-//00000000: 54 68 69 73 20 69 73 20 61 20 6c 6f 6e 67 65 72  This is a longer
-//00000010: 20 65 78 61 6d 70 6c 65 20 6f 66 20 61 20 68 65   example of a he
-//00000020: 78 64 75 6d 70 2e 20 4d 61 72 76 65 6c 20 61 74  xdump. Marvel at
-//00000030: 20 69 74 73 20 6d 61 67 6e 69 66 69 63 65 6e 63   its magnificenc
-//00000040: 65 2e 0a                                         e..
+Hello, world!
 
 
-int main(void) {
-    char data_buf[16];
-    char sbuf[16];
-    unsigned offset = 0;
-    int n;
-    while ((n = hex_read(data_buf)) > 0) {
+while ((n = hex_read(data_buf)) > 0) {
         hex_format_offset(offset, sbuf);
         hex_write_string(sbuf);
         hex_write_string(": ");
@@ -22,15 +9,10 @@ int main(void) {
             hex_format_byte_as_hex(data_buf[i], sbuf);
             //remove any initial 0s
             if (sbuf[0] == '0') {
-                //if n is not 16, then we need to add a space
-                // My output: 00000000: 00000 00000 00000 54 68 69 73 20 69 73 20 61 20 6c 6f 6e  ...This is a lon
-                //Expected: 00000000: 54 68 69 73 20 69 73 20 61 20 6c 6f 6e 67 65 72  This is a longer
-                if (i == 0 && n != 16) {
-                    hex_write_string(sbuf[1]);
-                }
-                
-                
-                hex_write_string(&sbuf[1]);
+                //print nothing
+                //hex_write_string("");
+                //hex_write_string(&sbuf[1]);
+                hex_write_string(&sbuf[2]);
             } else {
                 hex_write_string(sbuf);
             }
