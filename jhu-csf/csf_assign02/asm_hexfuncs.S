@@ -1,5 +1,5 @@
 .section .rodata
-
+//0				;136;0c
 hex_digits:
   .ascii "0123456789abcdef"
 
@@ -74,16 +74,33 @@ hex_format_offset:
    returned. */
 hex_format_byte_as_hex:
 
-
-
-   
-
-
-
-
-  
-
-  .globl hex_format_byte_as_printable
+	// sets byteval to r8
+	mov	%rdi, %r8
+	// sets sbuf[] to r9
+	mov	%rsi, %r9
+	// sets integer for loop
+	movl	$1, %ecx
+	jmp	.LcheckCond
+.Ltop:
+	// moves byteval to eax
+	movzbl	%r8b, %eax
+	// uses AND operation with 0xF
+	andl	$0xF, %eax
+	// sets sbuf[ecx] to hex_digits[byteval & 0xF]
+	movzbl	hex_digits(,%rax,1), %eax
+	mov	%al, (%r9,%rcx)
+	// right shifts byteval by 4
+	shr	$4, %r8
+	// decrements ecx by 1
+	dec	%ecx
+.LcheckCond:
+	// compares ecx with 0; begins loop is greater than or equal
+	cmp	$0, %ecx
+	jge	.Ltop
+	// sets sbuf[2] to null-break
+	mov	$0, %al
+	mov	%al, 2(%r9)
+	ret
 
 //2. set up the arguments for the write syscall
 //3. call the write syscall
