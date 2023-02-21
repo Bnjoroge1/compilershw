@@ -64,7 +64,32 @@ hex_write_string:
 
 	.globl hex_format_offset
 hex_format_offset:
-	/* TODO: implement */
+	// sets byteval to r8
+	mov	%rdi, %r8
+	// sets sbuf[] to r9
+	mov	%rsi, %r9
+	// sets integer for loop
+	movl	$7, %ecx
+	jmp	.LcheckConf
+.Ltopf:
+	// moves byteval to eax
+	movzbl	%r8b, %eax
+	// uses AND operation with 0xF
+	andl	$0xF, %eax
+	// sets sbuf[ecx] to hex_digits[byteval & 0xF]
+	movzbl	hex_digits(,%rax,1), %eax
+	mov	%al, (%r9,%rcx)
+	// right shifts byteval by 4
+	shr	$4, %r8
+	// decrements ecx by 1
+	dec	%ecx
+.LcheckConf:
+	// compares ecx with 0; begins loop is greater than or equal
+	cmp	$0, %ecx
+	jge	.Ltopf
+	// sets sbuf[2] to null-break
+	mov	$0, %al
+	mov	%al, 8(%r9)
 	ret
 
   .globl hex_format_byte_as_hex
