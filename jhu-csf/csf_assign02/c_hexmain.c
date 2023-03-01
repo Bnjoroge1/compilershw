@@ -53,5 +53,6 @@ for (int i = n; i < 16; i++) {
         hex_write_string("\n");
         offset += 16;
     }
+
     return 0;
 }

@@ -27,7 +27,7 @@ void hex_write_string(const char s[])
      write(1, s, len);
 
      // add the nul-terminator
-     write(1, "\0", 1);
+     //write(1, "\0", 1);
 }
 //// Format an unsigned value as an offset string consisting of exactly 8
 // hex digits.  The formatted offset is stored in sbuf, which must

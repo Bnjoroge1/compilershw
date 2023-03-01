@@ -30,6 +30,7 @@ void testFormatByteAsHex(TestObjs *objs);
 void testHexToPrintable(TestObjs *objs);
 void testRead(TestObjs *objs);
 void testHexWrite(TestObjs *objs);
+void testMain(void);
 
 int main(int argc, char **argv) {
   if (argc > 1) {
@@ -43,6 +44,7 @@ int main(int argc, char **argv) {
   TEST(testHexToPrintable);
   TEST(testRead);
   TEST(testHexWrite);
+  
 
 
   TEST_FINI();
@@ -72,24 +74,4 @@ void testHexToPrintable(TestObjs *objs) {
   ASSERT('H' == hex_to_printable(objs->test_data_1[0]));
   ASSERT('.' == hex_to_printable(objs->test_data_1[13]));
 }
-void testRead(TestObjs *objs) {
-  char buf[16];
-  int n = hex_read(buf);
-  //read usingread() and compare the result with the test data
-  //int m = read(0, buf, 16);
-  //ASSERT(m == n);
-  //ASSERT(n == 16);
-  ASSERT(0 == strcmp(buf, objs->test_data_1));
-}
-//write function to test hex_write
-void testHexWrite(TestObjs *objs) {
-  char buf[16];
-  hex_write_string(buf);
-  //read usingread() and compare the result with the test data
-  //int m = read(0, buf, 16);
-  //ASSERT(m == n);
-  //ASSERT(n == 16);
-  //check that buf is written to stdou
-  
-  //ASSERT(0 == strcmp(buf, objs->test_data_1));
-}
+
