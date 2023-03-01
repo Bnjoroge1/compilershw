@@ -60,15 +60,6 @@ hex_write_string:
   movq %rax, %rsi
   //call the write syscall
   syscall
-
-
-
-
- 
-  
-
-
-
   
  
 
@@ -89,8 +80,7 @@ hex_format_offset:
 	andl	$0xF, %eax
 	// sets sbuf[ecx] to hex_digits[byteval & 0xF]
 	movzbl	hex_digits(,%rax,1), %eax
-
-	//mov	%al, (%r9,%rcx)
+	mov	%al, (%r9,%rcx)
 	// right shifts byteval by 4
 	shr	$4, %r8
 	// decrements ecx by 1
@@ -99,9 +89,9 @@ hex_format_offset:
 	// compares ecx with 0; begins loop is greater than or equal
 	cmp	$0, %ecx
 	jge	.Ltopf
-	// sets sbuf[2] to null-break
+	// sets sbuf[8] to null-break
 	mov	$0, %al
-	//mov	%al, 8(%r9)
+	mov	%al, 8(%r9)
 	ret
 
   .globl hex_format_byte_as_hex
