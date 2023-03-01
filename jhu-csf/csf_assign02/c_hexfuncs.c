@@ -1,5 +1,4 @@
 // C implementation of hexdump functions
-
 #include <unistd.h> // this is the only system header file you may include!
 #include "hexfuncs.h"
 
@@ -7,11 +6,11 @@
 // Returns the number of characters read.
 unsigned hex_read(char data_buf[])
 {
-     // 1. read from stdin
-     int n = read(0, data_buf, 16);
-
-     // 2. return the number of characters read
-     return n;
+  // 1. read from stdin
+  int n = read(0, data_buf, 16);
+  
+  // 2. return the number of characters read
+  return n;
 }
 // Write given nul-terminated string to standard output.
 void hex_write_string(const char s[])
@@ -58,7 +57,6 @@ void hex_format_byte_as_hex(unsigned char byteval, char sbuf[]) {
     byteval >>= 4;
   }
   sbuf[2] = '\0';
-  
 }
 
 

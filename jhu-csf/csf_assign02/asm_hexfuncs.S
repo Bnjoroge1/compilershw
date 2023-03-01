@@ -7,9 +7,8 @@ hex_digits:
 
 
 	.globl hex_read
-hex_read:	
-	/ /* TODO: implement */
-
+hex_read:
+	
 
 
 .globl hex_write_string
