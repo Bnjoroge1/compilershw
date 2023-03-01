@@ -2,63 +2,75 @@
 //0				;136;0c
 hex_digits:
   .ascii "0123456789abcdef"
+len: .quad 0
+//line terminator 
+endLine: .ascii "\n"
+//newline character
+newline: .ascii "\0"
+
 
 .section .text
 
 
 	.globl hex_read
-hex_read:
+hex_read:	
+	//implement assembly for hex_read
+	//sets data_buf to rdi
+	movq	%rdi, %r8
+	//setup the arguments for the read syscall
+	//move the file descriptor to rdi
+	movq	$0, %rdi
+	//move the address of data_buf to rsi
+	movq	%r8, %rsi
+	//move the number of bytes to read to rdx
+	movq	$16, %rdx
+	//move the read syscall number to rax
+	movq	$0, %rax
+	//call the read syscall
+	syscall
+
 	
-
-
 .globl hex_write_string
 hex_write_string:
-  // push the registers onto the stack to preserve their values
-  push %rbp
-  push %rbx
-  push %rcx
-  push %rdx
-  push %rsi
-  push %rdi
-  
-  // set up the arguments for the write syscall
-  mov $1, %rax      // write syscall number
-  mov $1, %rdi      // stdout file descriptor
-  mov %rsi, %rdx    // buffer address
-  mov %rdx, %rcx    // buffer length
-  
-  // call the write syscall
-  syscall
-  
-  // print some log statements
-  mov $0x0a, %rdi   // newline character
-  mov $0x0a, %rsi   // newline character
-  lea .L1(%rip), %rdx // buffer address
-  mov $6, %rcx      // buffer length
-  call hex_write_string
-  mov $0x0a, %rdi   // newline character
-  mov $0x0a, %rsi   // newline character
-  lea .L2(%rip), %rdx // buffer address
-  mov $6, %rcx      // buffer length
-  call hex_write_string
-  
-  // restore the registers from the stack
-  pop %rdi
-  pop %rsi
-  pop %rdx
-  pop %rcx
-  pop %rbx
-  pop %rbp
-  
-  // return to the caller
-  ret
-  
-  .L1:
-  .string "BUFFER"
-  
-  .L2:
-  .string "LENGTH"
+  //initalize len to 0
+  //move len to rax
+  movq $len, %rax
+  movq $0, %rax
+  jmp .LcheckCont
 
+.LcheckCont:
+  //check if we have reached the end of the string
+  //move end line to rbx
+  movq $endLine, %rbx
+  cmp %rbx, (%rdi,%rax, 4)
+  //cmpb $endLine, (%rdi,%rax,1)
+  je .EndLoop        // jump to end if found
+  //incq %rsi          // increment s pointer
+  incq %rax          // increment length
+  //return to the top of the loop
+  ret 
+
+.EndLoop:
+  //set up the arguments for the write syscall
+  //move s to r8 
+  movq %rdi, %r8
+  //move the file descriptor to rdi
+  movq $1, %r9
+  //move rax to rsi
+  movq %rax, %rsi
+  //call the write syscall
+  syscall
+
+
+
+
+ 
+  
+
+
+
+  
+ 
 
 
 	.globl hex_format_offset
@@ -77,7 +89,8 @@ hex_format_offset:
 	andl	$0xF, %eax
 	// sets sbuf[ecx] to hex_digits[byteval & 0xF]
 	movzbl	hex_digits(,%rax,1), %eax
-	mov	%al, (%r9,%rcx)
+
+	//mov	%al, (%r9,%rcx)
 	// right shifts byteval by 4
 	shr	$4, %r8
 	// decrements ecx by 1
@@ -88,7 +101,7 @@ hex_format_offset:
 	jge	.Ltopf
 	// sets sbuf[2] to null-break
 	mov	$0, %al
-	mov	%al, 8(%r9)
+	//mov	%al, 8(%r9)
 	ret
 
   .globl hex_format_byte_as_hex
@@ -96,7 +109,7 @@ hex_format_offset:
    the two digit hexadecimal representation of the byte value.
    For example, if the byte value is 0x32, the string "32" is
    returned. */
-hex_format_byte_as_hex:
+   hex_format_byte_as_hex:
 
 	// sets byteval to r8
 	mov	%rdi, %r8
@@ -125,6 +138,7 @@ hex_format_byte_as_hex:
 	mov	$0, %al
 	mov	%al, 2(%r9)
 	ret
+
 
 //2. set up the arguments for the write syscall
 //3. call the write syscall
