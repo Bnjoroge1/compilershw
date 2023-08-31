@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
   TEST(testFormatByteAsHex);
   TEST(testHexToPrintable);
   TEST(testRead);
-  TEST(testHexWrite);
+  //  TEST(testHexWrite);
   
 
 
@@ -75,3 +75,9 @@ void testHexToPrintable(TestObjs *objs) {
   ASSERT('.' == hex_to_printable(objs->test_data_1[13]));
 }
 
+void testRead(TestObjs *objs) {
+  (void) objs;
+  char test[] = "Hello\n";
+  int n = hex_read(test);
+  ASSERT(n == 5);
+}

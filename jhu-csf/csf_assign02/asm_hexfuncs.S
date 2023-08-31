@@ -15,6 +15,8 @@ newline: .ascii "\0"
 	.globl hex_read
 hex_read:	
 	//implement assembly for hex_read
+	push %rbp
+	movq %rsp, %rbp
 	//sets data_buf to rdi
 	movq	%rdi, %r8
 	//setup the arguments for the read syscall
@@ -28,58 +30,51 @@ hex_read:
 	movq	$0, %rax
 	//call the read syscall
 	syscall
+	pop %rbp
+	ret
 	
-
-
-
-
-
-
 .globl hex_write_string
 hex_write_string:
-  //initalize len to 0
-  //move len to rax
-  movq $len, %rax
-  movq $0, %rax
-  jmp .LcheckCont
+	//initalize len to 0
+	//move len to rax
+	push %rbp
+	movq %rsp, %rbp
+	movq $len, %rax
+	movq $0, %rax
+	jmp .LcheckCont
 
 .LcheckCont:
-  //check if we have reached the end of the string
-  //move end line to rbx
-  movq $endLine, %rbx
-  cmp %rbx, (%rdi,%rax, 4)
-  //cmpb $endLine, (%rdi,%rax,1)
-  je .EndLoop        // jump to end if found
-  //incq %rsi          // increment s pointer
-  incq %rax          // increment length
-  //return to the top of the loop
-  ret 
+	//check if we have reached the end of the string
+	//move end line to rbx
+	movq $endLine, %rbx
+	cmp %rbx, (%rdi,%rax, 4)
+	//cmpb $endLine, (%rdi,%rax,1)
+	je .EndLoop        // jump to end if found
+	//incq %rsi          // increment s pointer
+	incq %rax          // increment length
+	//return to the top of the loop
+	pop %rbp
+	ret 
 
 .EndLoop:
-  //set up the arguments for the write syscall
-  //move s to r8 
-  movq %rdi, %r8
-  //move the file descriptor to rdi
-  movq $1, %r9
-  //move rax to rsi
-  movq %rax, %rsi
-  //call the write syscall
-  syscall
-
-
-
-
- 
-  
-
-
-
-  
+	//set up the arguments for the write syscall
+	//move s to r8 
+	movq %rdi, %r8
+	//move the file descriptor to rdi
+	movq $1, %r9
+	//move rax to rsi
+	movq %rax, %rsi
+	//call the write syscall
+	syscall
+	pop %rbp
+	ret
  
 
 
 	.globl hex_format_offset
 hex_format_offset:
+	push %rbp
+	movq %rsp, %rbp
 	// sets byteval to r8
 	mov	%rdi, %r8
 	// sets sbuf[] to r9
@@ -94,8 +89,7 @@ hex_format_offset:
 	andl	$0xF, %eax
 	// sets sbuf[ecx] to hex_digits[byteval & 0xF]
 	movzbl	hex_digits(,%rax,1), %eax
-
-	//mov	%al, (%r9,%rcx)
+	mov	%al, (%r9,%rcx)
 	// right shifts byteval by 4
 	shr	$4, %r8
 	// decrements ecx by 1
@@ -104,9 +98,10 @@ hex_format_offset:
 	// compares ecx with 0; begins loop is greater than or equal
 	cmp	$0, %ecx
 	jge	.Ltopf
-	// sets sbuf[2] to null-break
+	// sets sbuf[8] to null-break
 	mov	$0, %al
-	//mov	%al, 8(%r9)
+	mov	%al, 8(%r9)
+	pop	%rbp
 	ret
 
   .globl hex_format_byte_as_hex
@@ -116,6 +111,8 @@ hex_format_offset:
    returned. */
    hex_format_byte_as_hex:
 
+	push 	%rbp
+	movq	%rsp, %rbp
 	// sets byteval to r8
 	mov	%rdi, %r8
 	// sets sbuf[] to r9
@@ -142,6 +139,7 @@ hex_format_offset:
 	// sets sbuf[2] to null-break
 	mov	$0, %al
 	mov	%al, 2(%r9)
+	pop 	%rbp
 	ret
 
 
@@ -155,6 +153,8 @@ hex_format_offset:
 
 	.globl hex_to_printable
 hex_to_printable:
+	push 	%rbp
+	movq 	%rsp, %rbp
 	// Compare "parameter" to 32 ASCII
 	cmp	$32, %rdi
 	// Fails if less than 32
@@ -165,11 +165,13 @@ hex_to_printable:
 	jg	.LelsePart
 	// Returns "parameter" if both statements are true
 	mov	%rdi, %rax
+	pop	%rbp
 	ret
 
 .LelsePart:
 	// Returns 46, the ASCII code for "."
 	mov	$46, %rax
+	pop	%rbp
 	ret
 # Format a byte value (in the range 0-255) as string consisting
 # of two hex digits. The string is stored in sbuf.

@@ -51,8 +51,8 @@ main:
     //jump to the end of the loop if n is less than or equal to 0
     jle .LdoneWithRead
     //set up arguments for hex_format_offset
-    leaq sbuf, %rdi
-    movq offset, %rsi
+    leaq sbuf, %rsi
+    movq offset, %rdi
     //call hex_format_offset
     call hex_format_offset
     //set up arguments for hex_write_string
@@ -75,7 +75,7 @@ main:
     //move data buffer to the rdi register
     leaq data_buf, %rdi
     //move the loop counter to the rsi register
-    movl %ecx, %esi
+    movl %ecx, %rsi
     //get sbuf to the rdx register
     leaq sbuf, %rdx
     //call hex_format_byte_as_hex
