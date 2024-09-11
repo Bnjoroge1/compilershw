@@ -122,9 +122,29 @@ Value Interpreter::execute() {
 }
 
 Value Interpreter::evaluate_node(Node *node, Environment &env) {
+    if (node == nullptr) {
+        std::cerr << "Debug: Encountered null node" << std::endl;
+        EvaluationError::raise(Location(), "Null node encountered in evaluate_node");
+    }
+
+    
     switch (node->get_tag()) {
+        case AST_STATEMENT:
+            if (node->get_num_kids() > 0) {
+                return evaluate_node(node->get_kid(0), env);
+            }
+            return Value(0); // Empty statement
+        
         case AST_INT_LITERAL:
             return Value(std::stoi(node->get_str()));
+        case AST_VAR_DECLARATION:
+            if (node->get_num_kids() > 0) {
+                Node* var_name_node = node->get_kid(0);
+                if (var_name_node != nullptr && var_name_node->get_tag() == AST_VARREF) {
+                    env.define(var_name_node->get_str(), Value(0));
+                }
+            }
+            return Value(0);  // Variable declarations evaluate to 0
         case AST_VARREF:
             return env.lookup(node->get_str());
         case AST_ASSIGN: {
@@ -185,7 +205,9 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
             return Value(evaluate_node(node->get_kid(0), env).get_ival() != 
                          evaluate_node(node->get_kid(1), env).get_ival() ? 1 : 0);
         default:
-            EvaluationError::raise(node->get_loc(), "Unknown node type in expression");
+            
+            EvaluationError::raise(node->get_loc(), 
+                ("Unknown node type in expression: " + std::to_string(node->get_tag())).c_str());
     }
     return Value(0); // This line should never be reached
 }
