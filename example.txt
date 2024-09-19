@@ -1,0 +1,35 @@
+var x;
+var y;
+x = 5;
+y = 10;
+
+function add(a, b) {
+    a + b;
+}
+
+function multiply(a, b) {
+    a * b;
+}
+
+if (x < y && add(x, 2) > 7) {
+    while (x < y) {
+        x = x + 1;
+        if (x < y / 2) {
+            y = y - 1;
+        }
+    }
+} else {
+    x = multiply(x, 2);
+    y = y / 2;
+}
+
+var result;
+result = add(x, y);
+
+if (result > 20 || result < 0) {
+    result = 20;
+} else {
+    result = result * 2;
+}
+
+result;
