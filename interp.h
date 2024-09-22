@@ -13,6 +13,8 @@ class Location;
 class Interpreter {
 private:
   Node *m_ast;
+  std::vector<Function*> m_functions;
+ 
 
 public:
   Interpreter(Node *ast_to_adopt);
@@ -20,6 +22,14 @@ public:
 
   void analyze();
   Value execute();
+  static Value intrinsic_print(Value args[], unsigned num_args,
+                               const Location &loc, Interpreter *interp);
+  static Value intrinsic_println(Value args[], unsigned num_args,
+                                     const Location &loc, Interpreter *interp);
+  static Value intrinsic_readint(Value args[], unsigned num_args, const Location &loc, Interpreter *interp);
+
+
+
 
 private:
   // TODO: private member functions

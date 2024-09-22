@@ -60,6 +60,9 @@ Node *Parser2::parse_Unit() {
 
 Node *Parser2::parse_Stmt() {
     Node *next = m_lexer->peek();
+    if (next == nullptr) {
+        EvaluationError::raise(m_lexer->get_current_loc(), "Unexpected end of input");
+    }
     //parsing the if statement
     if (next->get_tag() == TOK_IF) {
         return parse_If_Stmt();
@@ -90,23 +93,38 @@ Node *Parser2::parse_TStmt() {
 }
 
 Node *Parser2::parse_If_Stmt() {
+
     Node *if_stmt = new Node(AST_IF);
     
     expect(TOK_IF);
     expect(TOK_LPAREN);
     Node *condition = parse_A();
+    if (condition == nullptr) {
+        delete if_stmt;
+        EvaluationError::raise(m_lexer->peek()->get_loc(), "Failed to parse condition in if statement");
+    }
     if_stmt->append_kid(condition);
     expect(TOK_RPAREN);
     expect(TOK_LBRACE);
     Node *if_body = parse_SList();
+    if (if_body == nullptr) {
+        delete if_stmt;
+        EvaluationError::raise(m_lexer->peek()->get_loc(), "Failed to parse body of if statement");
+    }
+
     expect(TOK_RBRACE);
     
     if_stmt->append_kid(if_body);
     
-    if (m_lexer->peek()->get_tag() == TOK_ELSE) {
+    Node *next = m_lexer->peek();
+    if (next != nullptr && next->get_tag() == TOK_ELSE) {
         expect(TOK_ELSE);
         expect(TOK_LBRACE);
         Node *else_body = parse_SList();
+        if (else_body == nullptr) {
+            delete if_stmt;
+            EvaluationError::raise(m_lexer->peek()->get_loc(), "Failed to parse body of else statement");
+        }
         expect(TOK_RBRACE);
         if_stmt->append_kid(else_body);
     }

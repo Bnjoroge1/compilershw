@@ -76,6 +76,7 @@ int execute(int argc, char **argv) {
       Interpreter interp(ast.release());
       interp.analyze();
       Value result = interp.execute();
+      delete ast.release();
       printf("Result: %s\n", result.as_str().c_str());
     }
   }
