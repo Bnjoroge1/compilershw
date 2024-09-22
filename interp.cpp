@@ -111,7 +111,7 @@ Value Interpreter::execute() {
 
     Environment env;
     Value result;
-    
+
     // Bind intrinsic functions to the global environment
     env.define("print", Value(&Interpreter::intrinsic_print));
     env.define("println", Value(&Interpreter::intrinsic_println));
@@ -203,9 +203,8 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
         Node* var_name_node = node->get_kid(0);
         if (var_name_node != nullptr && var_name_node->get_tag() == AST_VARREF) {
             std::string var_name = var_name_node->get_str();
-            if (!env.is_defined(var_name)) {  // Check if not already defined
-                env.define(var_name, Value(0));
-            }
+            env.define(var_name, Value(0));
+            return Value(0);
         }
     }
     return Value(0);  // Variable declarations evaluate to 0
@@ -331,6 +330,7 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
                 "Incorrect number of arguments for function '%s': expected %u, got %zu", 
                 func_name.c_str(), func->get_num_params(), args.size());
         }
+               // std::cout << "Creating new environment for function call, parent: " << func->get_parent_env() << std::endl;
 
         // Create new environment for function call
         Environment call_env(func->get_parent_env());
@@ -344,21 +344,25 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
         Node* body = func->get_body();
         Value result;
         for (unsigned i = 0; i < body->get_num_kids(); ++i) {
-            if (body->get_kid(i)->get_tag() == AST_ASSIGN) {
-                std::string var_name = body->get_kid(i)->get_kid(0)->get_str();
-                Value value = evaluate_node(body->get_kid(i)->get_kid(1), call_env);
+            Node* stmt = body->get_kid(i);
+            if (stmt->get_tag() == AST_ASSIGN) {
+                std::string var_name = stmt->get_kid(0)->get_str();
+                Value value = evaluate_node(stmt->get_kid(1), call_env);
                 if (!call_env.is_defined(var_name)) {
                     call_env.define(var_name, value);
                 } else {
                     call_env.assign(var_name, value);
                 }
-                result = value;
             } else {
-                result = evaluate_node(body->get_kid(i), call_env);
+                result = evaluate_node(stmt, call_env);
+                // If this is the last statement, it's implicitly the return value
+                if (i == body->get_num_kids() - 1) {
+                    return result;
+                }
             }
         }
 
-        return result;
+return result;  // In case there are no statements in the function body
     } else if (func_val.get_kind() == VALUE_INTRINSIC_FN) {
         // Handle intrinsic functions
         IntrinsicFn fn = func_val.get_intrinsic_fn();
@@ -386,7 +390,7 @@ Value Interpreter::intrinsic_print(Value args[], unsigned num_args,
     }
     printf("%s", args[0].as_str().c_str());
     fflush(stdout);  // Ensure output is immediately visible
-    return Value(0);  // Return 0 as per specification  
+    return Value(0);  
 }
 Value Interpreter::intrinsic_println(Value args[], unsigned num_args,
                                      const Location &loc, Interpreter *interp) {
@@ -395,7 +399,7 @@ Value Interpreter::intrinsic_println(Value args[], unsigned num_args,
   }
   printf("%s\n", args[0].as_str().c_str());
   fflush(stdout);  // Ensure output is immediately visible
-  return Value(0);  // Return 0 as per specification
+  return Value(0);  
 }
 
 Value Interpreter::intrinsic_readint(Value args[], unsigned num_args, const Location &loc, Interpreter *interp) {
@@ -407,7 +411,7 @@ Value Interpreter::intrinsic_readint(Value args[], unsigned num_args, const Loca
     while (!(std::cin >> input)) {
         std::cin.clear(); // clear error flags
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // discard invalid input
-        std::cout << "Invalid input. Please enter an integer: ";
+        //std::cout << "Invalid input. Please enter an integer: ";
     }
     
     return Value(input);
