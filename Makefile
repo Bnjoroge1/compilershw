@@ -20,7 +20,8 @@ clean :
 
 depend :
 	$(CXX) $(CXXFLAGS) -M $(CXX_SRCS) >> depend.mak
-
+solution:
+	zip -9r solution.zip *.h *.cpp Makefile README.txt
 depend.mak :
 	touch $@
 
