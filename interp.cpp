@@ -281,8 +281,9 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
                 EvaluationError::raise(node->get_loc(), "Condition in if statement is not an integer");
             }
             if (condition.get_ival() != 0) {
+                Environment if_env(&env);
                 //evaluate the 'if' body
-                  evaluate_node(node->get_kid(1), env);
+                   evaluate_node(node->get_kid(1), env);
         } else if(node->get_num_kids()> 2){
                //evaluate the else body block. 
                   evaluate_node(node->get_kid(2), env);
