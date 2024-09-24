@@ -224,9 +224,14 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
             env.assign(var_name, value);
             return value;
         }
-        case AST_ADD:
-            return Value(evaluate_node(node->get_kid(0), env).get_ival() + 
-                         evaluate_node(node->get_kid(1), env).get_ival());
+        case AST_ADD: {
+            Value left = evaluate_node(node->get_kid(0), env);
+            Value right = evaluate_node(node->get_kid(1), env);
+            if (!left.is_numeric() || !right.is_numeric()) {
+                EvaluationError::raise(node->get_loc(), "Operands of '+' must be numeric");
+            }
+                    return Value(left.get_ival() + right.get_ival());
+        }
         case AST_SUB:
             return Value(evaluate_node(node->get_kid(0), env).get_ival() - 
                          evaluate_node(node->get_kid(1), env).get_ival());
@@ -284,12 +289,13 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
                 //evaluate the 'if' body
                 Environment if_env(&env);
 
-                    evaluate_node(node->get_kid(1), env);
+                evaluate_node(node->get_kid(1), env);
         } else if(node->get_num_kids()> 2){
-               //evaluate the else body block.
-                       Environment else_env(&env);
+                //evaluate the else body block.
 
-                   evaluate_node(node->get_kid(2), env);
+                Environment else_env(&env);
+
+                evaluate_node(node->get_kid(2), env);
             }
             return Value(0);   //return 0
         }
@@ -302,8 +308,9 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
             if (condition.get_ival() == 0) {
                 break;  // Exit the loop if the condition is false
             }
+            Environment while_env(&env);
             // Execute the body of the while loop
-                evaluate_node(node->get_kid(1), env);
+            evaluate_node(node->get_kid(1), while_env);
             }
             return Value(0);  // While statements always evaluate to 0
         }
@@ -341,7 +348,7 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
                 "Incorrect number of arguments for function '%s': expected %u, got %zu", 
                 func_name.c_str(), func->get_num_params(), args.size());
         }
-               // std::cout << "Creating new environment for function call, parent: " << func->get_parent_env() << std::endl;
+               
 
         // Create new environment for function call
         Environment call_env(func->get_parent_env());
@@ -422,7 +429,6 @@ Value Interpreter::intrinsic_readint(Value args[], unsigned num_args, const Loca
     while (!(std::cin >> input)) {
         std::cin.clear(); // clear error flags
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // discard invalid input
-        //std::cout << "Invalid input. Please enter an integer: ";
     }
     
     return Value(input);

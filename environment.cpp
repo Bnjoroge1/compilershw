@@ -19,7 +19,7 @@ void Environment::define(const std::string& name, const Value& value) {
 }
 
 Value Environment::lookup(const std::string& name) const {
-    //std::cout << "Looking up variable " << name << " in environment " << this << std::endl;
+    
 
     auto it = variables.find(name);
     if (it != variables.end()) {
@@ -40,17 +40,16 @@ void Environment::assign(const std::string& name, const Value& value) {
     auto it = variables.find(name);
     if (it != variables.end()) {
         // If the variable exists in this scope, update it
-        //std::cout << "Variable found in current scope, updating" << std::endl;
+        
         it->second = value;
     } else if (m_parent != nullptr) {
         // If not found in this scope and there's a parent, try to assign in the parent
-        //std::cout << "Variable not found, trying parent environment " << m_parent << std::endl;
+        
         m_parent->assign(name, value);
         //EvaluationError::raise(Location(), "Variable '%s' not defined", name.c_str());
     } else {
         // If we're in the global scope and the variable doesn't exist, create it
-        //variables[name] = value;
-               // std::cout << "Variable not found in any scope, raising error" << std::endl;
+        
 
         EvaluationError::raise(Location(), "Variable '%s' not defined", name.c_str());
     }
