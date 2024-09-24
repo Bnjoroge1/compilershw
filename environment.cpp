@@ -46,11 +46,7 @@ void Environment::assign(const std::string& name, const Value& value) {
         // If not found in this scope and there's a parent, try to assign in the parent
         
         m_parent->assign(name, value);
-        //EvaluationError::raise(Location(), "Variable '%s' not defined", name.c_str());
-    } else {
-        // If we're in the global scope and the variable doesn't exist, create it
         
-
-        EvaluationError::raise(Location(), "Variable '%s' not defined", name.c_str());
+    
     }
 }
