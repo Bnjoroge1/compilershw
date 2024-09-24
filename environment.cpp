@@ -23,26 +23,15 @@ Value Environment::lookup(const std::string& name) const {
 
     auto it = variables.find(name);
     if (it != variables.end()) {
-       //std::cout << "Found variable '" << name << "' with value " << it->second.as_str() << " in environment " << this << std::endl;
-        if (m_parent != nullptr) {
-            // If we're not in the global scope, try to find in parent environments
-            try {
-                return m_parent->lookup(name);
-            } catch (const EvaluationError&) {
-                // If not found in parent, use the local value
-                return it->second;
-            }
-        }
         return it->second;
     }
-
-    if (m_parent != nullptr) {
-        //std::cout << "Not found, looking in parent environment " << m_parent << std::endl;
+    else if (m_parent != nullptr) {
         return m_parent->lookup(name);
     }
-
-    //std::cout << "Variable '" << name << "' not found in any scope" << std::endl;
-    EvaluationError::raise(Location(), "Variable '%s' not defined", name.c_str());
+    else {
+        EvaluationError::raise(Location(), "Variable '%s' not defined", name.c_str());
+    }
+  
 }
 void Environment::assign_local(const std::string& name, const Value& value) {
     variables[name] = value;

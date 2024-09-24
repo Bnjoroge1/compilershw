@@ -283,11 +283,13 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
             if (condition.get_ival() != 0) {
                 //evaluate the 'if' body
                 Environment if_env(&env);
-                   evaluate_node(node->get_kid(1), if_env);
+
+                    evaluate_node(node->get_kid(1), env);
         } else if(node->get_num_kids()> 2){
                //evaluate the else body block.
-               Environment else_env(&env);
-                  evaluate_node(node->get_kid(2), else_env);
+                       Environment else_env(&env);
+
+                   evaluate_node(node->get_kid(2), env);
             }
             return Value(0);   //return 0
         }
