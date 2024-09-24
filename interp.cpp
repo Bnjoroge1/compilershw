@@ -233,8 +233,14 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
                     return Value(left.get_ival() + right.get_ival());
         }
         case AST_SUB:
-            return Value(evaluate_node(node->get_kid(0), env).get_ival() - 
-                         evaluate_node(node->get_kid(1), env).get_ival());
+            {
+            Value left = evaluate_node(node->get_kid(0), env);
+            Value right = evaluate_node(node->get_kid(1), env);
+            if (!left.is_numeric() || !right.is_numeric()) {
+                EvaluationError::raise(node->get_loc(), "Operands of '-' must be numeric");
+            }
+                    return Value(left.get_ival() - right.get_ival());
+        }
         case AST_MULTIPLY:
             return Value(evaluate_node(node->get_kid(0), env).get_ival() * 
                          evaluate_node(node->get_kid(1), env).get_ival());
@@ -255,7 +261,10 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
         case AST_LESS: {
             Value left = evaluate_node(node->get_kid(0), env);
             Value right = evaluate_node(node->get_kid(1), env);
-            return Value(left.get_ival() < right.get_ival() ? 1 : 0);
+            if (!left.is_numeric() || !right.is_numeric()) {
+                EvaluationError::raise(node->get_loc(), "Operands of '<' must be numeric");
+            }
+            return Value(left.get_ival() < right.get_ival());
         }
         
         case AST_GREATER_EQUAL: {
@@ -266,9 +275,15 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
         case AST_LOGICAL_OR:
             return Value((evaluate_node(node->get_kid(0), env).get_ival() != 0 ||
                           evaluate_node(node->get_kid(1), env).get_ival() != 0) ? 1 : 0);
-        case AST_GREATER:
-            return Value(evaluate_node(node->get_kid(0), env).get_ival() > 
-                         evaluate_node(node->get_kid(1), env).get_ival() ? 1 : 0);
+
+        case AST_GREATER:{
+            Value left = evaluate_node(node->get_kid(0), env);
+            Value right = evaluate_node(node->get_kid(1), env);
+            if (!left.is_numeric() || !right.is_numeric()) {
+                EvaluationError::raise(node->get_loc(), "Operands of '<' must be numeric");
+            }
+            return Value(left.get_ival() > right.get_ival());
+        }
         
         
         case AST_LESS_EQUAL:
