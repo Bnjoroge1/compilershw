@@ -258,9 +258,18 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
             return Value(evaluate_node(node->get_kid(0), env).get_ival() / divisor);
         }
         case AST_LOGICAL_AND: {
+
             Value left = evaluate_node(node->get_kid(0), env);
-            if (left.get_ival() == 0) return Value(0); // Short-circuit evaluation
+            if (!left.is_numeric()) {
+                EvaluationError::raise(node->get_loc(), "Operands of '&&' must be numeric");
+            }
+            if (left.get_ival() == 0) {
+                return Value(0); // Short-circuit evaluation
+            }
             Value right = evaluate_node(node->get_kid(1), env);
+            if (!right.is_numeric()) {
+                EvaluationError::raise(node->get_loc(), "Operands of '&&' must be numeric");
+            }
             return Value((left.get_ival() != 0 && right.get_ival() != 0) ? 1 : 0);
         }
         
@@ -281,10 +290,21 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
             }
             return Value(left.get_ival() >= right.get_ival());
         }
-        case AST_LOGICAL_OR:
-            return Value((evaluate_node(node->get_kid(0), env).get_ival() != 0 ||
-                          evaluate_node(node->get_kid(1), env).get_ival() != 0) ? 1 : 0);
-
+        case AST_LOGICAL_OR: {
+            Value left = evaluate_node(node->get_kid(0), env);
+            if (!left.is_numeric()) {
+                EvaluationError::raise(node->get_loc(), "Operands of '||' must be numeric");
+            }
+            if (left.get_ival() != 0) {
+                return Value(1); // Short-circuit evaluation
+            }
+            Value right = evaluate_node(node->get_kid(1), env);
+            if (!right.is_numeric()) {
+                EvaluationError::raise(node->get_loc(), "Operands of '||' must be numeric");
+            }
+            return Value((left.get_ival() != 0 || right.get_ival() != 0) ? 1 : 0);
+        }
+        
         case AST_GREATER:{
             Value left = evaluate_node(node->get_kid(0), env);
             Value right = evaluate_node(node->get_kid(1), env);
