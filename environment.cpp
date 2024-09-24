@@ -13,11 +13,7 @@ Environment::~Environment() {
 
 // TODO: implement member functions
 void Environment::define(const std::string& name, const Value& value) {
-    // Check if the variable is already defined
-    if (variables.find(name) != variables.end()) {
-        EvaluationError::raise(Location(), "Variable '%s' is already defined in this scope", name.c_str());
-
-    }
+    
     variables[name] = value;
 
 }

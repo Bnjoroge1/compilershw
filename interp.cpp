@@ -51,7 +51,16 @@ void Interpreter::analyze_node(Node *node, std::set<std::string>& defined_vars) 
             // Add parameters to the function's scope
             Node* params = node->get_kid(1);
             for (unsigned i = 0; i < params->get_num_kids(); ++i) {
-                function_vars.insert(params->get_kid(i)->get_str());
+                std::string param_name = params->get_kid(i)->get_str();
+                if (function_vars.find(param_name) != function_vars.end()) {
+                    const Location& loc = params->get_kid(i)->get_loc();
+                    std::string error_msg = "input/" + loc.get_srcfile() + ":" +
+                                            std::to_string(loc.get_line()) + ":" +
+                                            std::to_string(loc.get_col()) +
+                                            ": Error: Parameter '" + param_name + "' is already defined";
+                    SemanticError::raise(loc, error_msg.c_str());
+                }
+                function_vars.insert(param_name);
             }
             
             // Analyze the function body with the new scope
@@ -77,10 +86,8 @@ void Interpreter::analyze_node(Node *node, std::set<std::string>& defined_vars) 
                 Node* var_name_node = node->get_kid(0);
                 if (var_name_node != nullptr) {
                     defined_vars.insert(var_name_node->get_str());
-                } else {
-                }
-            } else {
-            }
+                } 
+            } 
             break;
         case AST_INT_LITERAL:
             // Do nothing for integer literals
