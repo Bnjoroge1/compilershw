@@ -1,2 +1,8 @@
-print(42);
-print(1 + 2 * 3);
+var x;
+x = 5;
+if (x > 0) {
+    var y;
+    y = 10;
+    println(y);
+}
+println(x);
