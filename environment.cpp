@@ -47,6 +47,8 @@ void Environment::assign(const std::string& name, const Value& value) {
         
         m_parent->assign(name, value);
         
-    
+    } else {
+        // If the variable is not found in any scope, raise an error
+        EvaluationError::raise(Location(), "Variable '%s' not defined", name.c_str());
     }
 }
