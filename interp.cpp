@@ -242,8 +242,14 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
                     return Value(left.get_ival() - right.get_ival());
         }
         case AST_MULTIPLY:
-            return Value(evaluate_node(node->get_kid(0), env).get_ival() * 
-                         evaluate_node(node->get_kid(1), env).get_ival());
+        {
+            Value left = evaluate_node(node->get_kid(0), env);
+            Value right = evaluate_node(node->get_kid(1), env);
+            if (!left.is_numeric() || !right.is_numeric()) {
+                EvaluationError::raise(node->get_loc(), "Operands of '*' must be numeric");
+            }
+            return Value(left.get_ival() * right.get_ival());
+        }   
         case AST_DIVIDE: {
             int divisor = evaluate_node(node->get_kid(1), env).get_ival();
             if (divisor == 0) {
