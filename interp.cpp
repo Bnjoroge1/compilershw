@@ -19,11 +19,8 @@ Interpreter::Interpreter(Node *ast_to_adopt)
 }
 
 Interpreter::~Interpreter() {
-    for (Function *func: m_functions) {
-        delete func;
-        
-    }
-   //delete m_ast;
+    
+   delete m_ast;
 }
 static const std::set<std::string> intrinsic_functions = {"print", "println", "readint", "mkarr", "len", "get", "set", "push", "pop"};
 
@@ -138,6 +135,7 @@ Value Interpreter::execute() {
         return Value(0);
     }
 
+
     // Iterate through all statements in the AST
     for (unsigned i = 0; i < m_ast->get_num_kids(); ++i) {
         Node *stmt = m_ast->get_kid(i);
@@ -167,7 +165,6 @@ Value Interpreter::execute() {
             case AST_STATEMENT_LIST:
             case AST_WHILE:
             case AST_FUNCTION:
-            
                 result = evaluate_node(stmt, env);
                 break;
             default:
@@ -179,6 +176,7 @@ Value Interpreter::execute() {
 }
 
 Value Interpreter::evaluate_node(Node *node, Environment &env) {
+
     if (node == nullptr) {
         
         EvaluationError::raise(Location(), "Null node encountered in evaluate_node");
@@ -382,6 +380,7 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
             return Value(0);  // While statements always evaluate to 0
         }
         case AST_FUNCTION: {
+
             std::string func_name = node->get_kid(0)->get_str();
             std::vector<std::string> param_names;
             Node *params = node->get_kid(1);
@@ -390,14 +389,18 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
                 }
             Node *body = node->get_kid(2);
             Function *func = new Function(func_name, param_names, &env, body);
+            Value func_val = Value(func);
             m_functions.push_back(func);  
-            env.define(func_name, Value(func));
+            env.define(func_name, func_val);
 
             return Value(0);  // Function definitions evaluate to 0
         }
        case AST_FNCALL: {
+
             std::string func_name = node->get_kid(0)->get_str();
+
             Value func_val = env.lookup(func_name);
+
 
             // Evaluate arguments
             Node *arg_list = node->get_kid(1);
@@ -405,7 +408,9 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
             for (unsigned i = 0; i < arg_list->get_num_kids(); ++i) {
                 args.push_back(evaluate_node(arg_list->get_kid(i), env));
             }
+                        
 
+            
             if (func_val.get_kind() == VALUE_FUNCTION) {
                 Function *func = func_val.get_function();
 
@@ -452,10 +457,7 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
             // Handle intrinsic functions
             IntrinsicFn fn = func_val.get_intrinsic_fn();
             return fn(&args[0], args.size(), node->get_loc(), this);
-        } else if (func_val.get_kind() == VALUE_INTRINSIC_FN) {
-            IntrinsicFn fn = func_val.get_intrinsic_fn();
-            return fn(args.data(), args.size(), node->get_loc(), this);
-        } else {
+        }else {
             EvaluationError::raise(node->get_loc(), 
                 "Called value '%s' is not a function", func_name.c_str());
             }

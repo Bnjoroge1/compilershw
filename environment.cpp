@@ -12,24 +12,20 @@ Environment::~Environment() {
 }
 
 void Environment::define(const std::string& name, const Value& value) {
+
     variables[name] = value;
 
 }
 
 Value Environment::lookup(const std::string& name) const {
-    
-
     auto it = variables.find(name);
     if (it != variables.end()) {
         return it->second;
-    }
-    else if (m_parent != nullptr) {
+    } else if (m_parent != nullptr) {
         return m_parent->lookup(name);
-    }
-    else {
+    } else {
         EvaluationError::raise(Location(), "Variable '%s' not defined", name.c_str());
     }
-  
 }
 void Environment::assign_local(const std::string& name, const Value& value) {
     variables[name] = value;

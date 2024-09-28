@@ -12,7 +12,7 @@ Value::Value(int ival)
 Value::Value(Function *fn)
   : m_kind(VALUE_FUNCTION)
   , m_rep(fn) {
-  m_rep = fn;
+  m_rep->add_ref();
 }
 //array constructor
 Value::Value(Array *array)
@@ -65,6 +65,7 @@ Function *Value::get_function() const {
   assert(m_kind == VALUE_FUNCTION);
   return m_rep->as_function();
 }
+
 Array *Value::get_array() const {
   assert(m_kind == VALUE_ARRAY);
   return m_rep->as_array();
