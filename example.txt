@@ -1,26 +1,22 @@
-var result;
-result = mkarr();
-
-var i;
-i = 0;
-while (i < 40) {
-  push(result, 0);
-  i = i + 1;
+function fibhelp(a, b, n) {
+  var result;
+  println(result);
+  if (n == 0) {
+    result = b;
+  } else {
+    result = fibhelp(b, a + b, n - 1);
+  }
+  result;
 }
 
-set(result, 0, 0);
-set(result, 1, 1);
-
-i = 2;
-while (i < len(result)) {
-  set(result, i, get(result, i - 2) + get(result, i - 1));
-  i = i + 1;
+function fib(n) {
+  var result;
+  if (n < 2) {
+    result = n;
+  } else {
+    result = fibhelp(0, 1, n - 1);
+  }
+  result;
 }
 
-i = 0;
-while (i < len(result)) {
-  println(get(result, i));
-  i = i + 1;
-}
-
-get(result, 39);
+fib(readint());

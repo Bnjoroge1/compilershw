@@ -388,7 +388,9 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
                     param_names.push_back(params->get_kid(i)->get_str());
                 }
             Node *body = node->get_kid(2);
-            Function *func = new Function(func_name, param_names, &env, body);
+            // Create a new environment for the function
+            Environment* func_env = new Environment(&env);
+            Function *func = new Function(func_name, param_names, func_env, body);
             Value func_val = Value(func);
             m_functions.push_back(func);  
             env.define(func_name, func_val);
@@ -527,10 +529,10 @@ Value Interpreter::intrinsic_readint(Value args[], unsigned num_args, const Loca
     }
     
     int input;
-    while (!(std::cin >> input)) {
-        std::cin.clear(); // clear error flags
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // discard invalid input
+    if (scanf("%d", &input) != 1) {
+        EvaluationError::raise(loc, "Failed to read an integer");
     }
+    
     
     return Value(input);
 }
