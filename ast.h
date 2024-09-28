@@ -13,7 +13,6 @@ enum ASTKind {
   AST_INT_LITERAL,
   AST_UNIT,
   AST_STATEMENT,
-  // TODO: add members for other AST node kinds
   AST_VAR_DECLARATION,
   AST_ASSIGN,
   AST_LOGICAL_AND,
@@ -31,6 +30,8 @@ enum ASTKind {
   AST_STATEMENT_LIST,
   AST_FNCALL,
   AST_ARGLIST,
+  AST_ARRAY,
+  AST_INDEX
 
 };
 

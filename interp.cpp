@@ -10,7 +10,7 @@
 #include <string>
 #include <iostream>
 #include <limits>
-
+#include "array.h"
 
 
 Interpreter::Interpreter(Node *ast_to_adopt)
@@ -25,7 +25,7 @@ Interpreter::~Interpreter() {
     }
    //delete m_ast;
 }
-static const std::set<std::string> intrinsic_functions = {"print", "println", "readint"};
+static const std::set<std::string> intrinsic_functions = {"print", "println", "readint", "mkarr", "len", "get", "set", "push", "pop"};
 
 void Interpreter::analyze() {
   std::set<std::string> defined_vars;
@@ -123,6 +123,12 @@ Value Interpreter::execute() {
     env.define("print", Value(&Interpreter::intrinsic_print));
     env.define("println", Value(&Interpreter::intrinsic_println));
     env.define("readint", Value(&Interpreter::intrinsic_readint));
+    env.define("mkarr", Value(&Interpreter::intrinsic_mkarr));
+    env.define("len", Value(&Interpreter::intrinsic_len));
+    env.define("get", Value(&Interpreter::intrinsic_get));
+    env.define("set", Value(&Interpreter::intrinsic_set));
+    env.define("push", Value(&Interpreter::intrinsic_push));
+    env.define("pop", Value(&Interpreter::intrinsic_pop));
 
 
 
@@ -161,6 +167,7 @@ Value Interpreter::execute() {
             case AST_STATEMENT_LIST:
             case AST_WHILE:
             case AST_FUNCTION:
+            
                 result = evaluate_node(stmt, env);
                 break;
             default:
@@ -224,6 +231,7 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
             env.assign(var_name, value);
             return value;
         }
+
         case AST_ADD: {
             Value left = evaluate_node(node->get_kid(0), env);
             Value right = evaluate_node(node->get_kid(1), env);
@@ -388,80 +396,111 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
             return Value(0);  // Function definitions evaluate to 0
         }
        case AST_FNCALL: {
-    std::string func_name = node->get_kid(0)->get_str();
-    Value func_val = env.lookup(func_name);
+            std::string func_name = node->get_kid(0)->get_str();
+            Value func_val = env.lookup(func_name);
 
-    // Evaluate arguments
-    Node *arg_list = node->get_kid(1);
-    std::vector<Value> args;
-    for (unsigned i = 0; i < arg_list->get_num_kids(); ++i) {
-        args.push_back(evaluate_node(arg_list->get_kid(i), env));
-    }
+            // Evaluate arguments
+            Node *arg_list = node->get_kid(1);
+            std::vector<Value> args;
+            for (unsigned i = 0; i < arg_list->get_num_kids(); ++i) {
+                args.push_back(evaluate_node(arg_list->get_kid(i), env));
+            }
 
-    if (func_val.get_kind() == VALUE_FUNCTION) {
-        Function *func = func_val.get_function();
+            if (func_val.get_kind() == VALUE_FUNCTION) {
+                Function *func = func_val.get_function();
 
-        // Check number of arguments
-        if (args.size() != func->get_num_params()) {
+                // Check number of arguments
+                if (args.size() != func->get_num_params()) {
+                    EvaluationError::raise(node->get_loc(), 
+                        "Incorrect number of arguments for function '%s': expected %u, got %zu", 
+                        func_name.c_str(), func->get_num_params(), args.size());
+                }
+                    
+
+                // Create new environment for function call
+                Environment call_env(func->get_parent_env());
+
+                // Bind arguments to parameters
+                for (unsigned i = 0; i < args.size(); ++i) {
+                    call_env.define(func->get_params()[i], args[i]);
+                }
+
+                // Evaluate function body
+                Node* body = func->get_body();
+                Value result;
+                for (unsigned i = 0; i < body->get_num_kids(); ++i) {
+                    Node* stmt = body->get_kid(i);
+                    if (stmt->get_tag() == AST_ASSIGN) {
+                        std::string var_name = stmt->get_kid(0)->get_str();
+                        Value value = evaluate_node(stmt->get_kid(1), call_env);
+                        if (!call_env.is_defined(var_name)) {
+                            call_env.define(var_name, value);
+                        } else {
+                            call_env.assign(var_name, value);
+                        }
+                    } else {
+                        result = evaluate_node(stmt, call_env);
+                        // If this is the last statement, it's implicitly the return value
+                        if (i == body->get_num_kids() - 1) {
+                            return result;
+                        }
+                    }
+                }
+
+        return result;  // In case there are no statements in the function body
+        } else if (func_val.get_kind() == VALUE_INTRINSIC_FN) {
+            // Handle intrinsic functions
+            IntrinsicFn fn = func_val.get_intrinsic_fn();
+            return fn(&args[0], args.size(), node->get_loc(), this);
+        } else if (func_val.get_kind() == VALUE_INTRINSIC_FN) {
+            IntrinsicFn fn = func_val.get_intrinsic_fn();
+            return fn(args.data(), args.size(), node->get_loc(), this);
+        } else {
             EvaluationError::raise(node->get_loc(), 
-                "Incorrect number of arguments for function '%s': expected %u, got %zu", 
-                func_name.c_str(), func->get_num_params(), args.size());
-        }
-               
-
-        // Create new environment for function call
-        Environment call_env(func->get_parent_env());
-
-        // Bind arguments to parameters
-        for (unsigned i = 0; i < args.size(); ++i) {
-            call_env.define(func->get_params()[i], args[i]);
-        }
-
-        // Evaluate function body
-        Node* body = func->get_body();
-        Value result;
-        for (unsigned i = 0; i < body->get_num_kids(); ++i) {
-            Node* stmt = body->get_kid(i);
-            if (stmt->get_tag() == AST_ASSIGN) {
-                std::string var_name = stmt->get_kid(0)->get_str();
-                Value value = evaluate_node(stmt->get_kid(1), call_env);
-                if (!call_env.is_defined(var_name)) {
-                    call_env.define(var_name, value);
-                } else {
-                    call_env.assign(var_name, value);
-                }
-            } else {
-                result = evaluate_node(stmt, call_env);
-                // If this is the last statement, it's implicitly the return value
-                if (i == body->get_num_kids() - 1) {
-                    return result;
-                }
+                "Called value '%s' is not a function", func_name.c_str());
             }
         }
-
-return result;  // In case there are no statements in the function body
-    } else if (func_val.get_kind() == VALUE_INTRINSIC_FN) {
-        // Handle intrinsic functions
-        IntrinsicFn fn = func_val.get_intrinsic_fn();
-        return fn(&args[0], args.size(), node->get_loc(), this);
-    } else if (func_val.get_kind() == VALUE_INTRINSIC_FN) {
-        IntrinsicFn fn = func_val.get_intrinsic_fn();
-        return fn(args.data(), args.size(), node->get_loc(), this);
-    } else {
-        EvaluationError::raise(node->get_loc(), 
-            "Called value '%s' is not a function", func_name.c_str());
-    }
-}
-        default:
+        case AST_ARRAY: {
+            Array* arr = new Array();
+            for (unsigned i = 0; i < node->get_num_kids(); ++i) {
+                arr->append(evaluate_node(node->get_kid(i), env));
+            }
+            return Value(arr);
+        }
+        case AST_INDEX: {
+            if (node->get_num_kids() != 2) {
+                EvaluationError::raise(node->get_loc(), "Invalid array indexing operation");
+            }
+            Value array_value = evaluate_node(node->get_kid(0), env);
+            Value index_value = evaluate_node(node->get_kid(1), env);
             
-            EvaluationError::raise(node->get_loc(), 
-                ("Unknown node type in expression: " + std::to_string(node->get_tag())).c_str());
-    }
-    return Value(0); // This line should never be reached
+            if (!array_value.is_array()) {
+                EvaluationError::raise(node->get_loc(), "Indexed value is not an array");
+            }
+            if (!index_value.is_numeric()) {
+                EvaluationError::raise(node->get_loc(), "Array index must be numeric");
+            }
+            
+            Array* arr = array_value.get_array();
+            int index = index_value.get_ival();
+            
+            if (index < 0 || index >= static_cast<int>(arr->size())) {
+                EvaluationError::raise(node->get_loc(), "Array index out of bounds");
+            }
+            
+            return arr->get(index);
+        }
+        default:
+                
+                EvaluationError::raise(node->get_loc(), 
+                    ("Unknown node type in expression: " + std::to_string(node->get_tag())).c_str());
+        }
+        return Value(0); // This line should never be reached
 }
 
 Value Interpreter::intrinsic_print(Value args[], unsigned num_args,
                                    const Location &loc, Interpreter *interp) {
+    //print the value to the standard output
   if (num_args != 1) {
         EvaluationError::raise(loc, "Wrong number of arguments passed to print function");
     }
@@ -480,6 +519,7 @@ Value Interpreter::intrinsic_println(Value args[], unsigned num_args,
 }
 
 Value Interpreter::intrinsic_readint(Value args[], unsigned num_args, const Location &loc, Interpreter *interp) {
+    //read an integer from the standard input
     if (num_args != 0) {
         EvaluationError::raise(loc, "readint function does not accept any arguments");
     }
@@ -491,4 +531,71 @@ Value Interpreter::intrinsic_readint(Value args[], unsigned num_args, const Loca
     }
     
     return Value(input);
+}
+
+Value Interpreter::intrinsic_mkarr(Value args[], unsigned num_args,
+                                   const Location &loc, Interpreter *interp) {
+    //create a new array with the given values
+    Array* new_array = new Array();
+    for (unsigned i = 0; i < num_args; ++i) {
+        new_array->append(args[i]);
+    }
+    return Value(new_array);
+}
+
+Value Interpreter::intrinsic_len(Value args[], unsigned num_args,
+                                 const Location &loc, Interpreter *interp) {
+    if (num_args != 1 || !args[0].is_array()) {
+        EvaluationError::raise(loc, "len expects one array argument");
+    }
+    Array* arr = args[0].get_array();
+    return Value(static_cast<int>(arr->size()));
+}
+Value Interpreter::intrinsic_get(Value args[], unsigned num_args,
+                                 const Location &loc, Interpreter *interp) {
+    if (num_args != 2 || !args[0].is_array() || !args[1].is_numeric()) {
+        EvaluationError::raise(loc, "get expects an array and an integer index");
+    }
+    Array* arr = args[0].get_array();
+    int index = args[1].get_ival();
+    if (index < 0 || index >= static_cast<int>(arr->size())) {
+        EvaluationError::raise(loc, "Array index out of bounds");
+    }
+    return arr->get(index);
+}
+
+Value Interpreter::intrinsic_set(Value args[], unsigned num_args,
+                                 const Location &loc, Interpreter *interp) {
+    if (num_args != 3 || !args[0].is_array() || !args[1].is_numeric()) {
+        EvaluationError::raise(loc, "set expects an array, an integer index, and a value");
+    }
+    Array* arr = args[0].get_array();
+    int index = args[1].get_ival();
+    if (index < 0 || index >= static_cast<int>(arr->size())) {
+        EvaluationError::raise(loc, "Array index out of bounds");
+    }
+    arr->set(index, args[2]);
+    return args[2];
+}
+
+Value Interpreter::intrinsic_push(Value args[], unsigned num_args,
+                                  const Location &loc, Interpreter *interp) {
+    if (num_args != 2 || !args[0].is_array()) {
+        EvaluationError::raise(loc, "push expects an array and a value");
+    }
+    Array* arr = args[0].get_array();
+    arr->append(args[1]);
+    return args[1];
+}
+
+Value Interpreter::intrinsic_pop(Value args[], unsigned num_args,
+                                 const Location &loc, Interpreter *interp) {
+    if (num_args != 1 || !args[0].is_array()) {
+        EvaluationError::raise(loc, "pop expects one array argument");
+    }
+    Array* arr = args[0].get_array();
+    if (arr->size() == 0) {
+        EvaluationError::raise(loc, "Cannot pop from an empty array");
+    }
+    return arr->pop();
 }

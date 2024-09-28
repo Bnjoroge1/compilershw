@@ -1,3 +1,11 @@
-if ('string') {
-    println("This should not be printed");
-}
+var arr;
+arr = mkarr(1, 2, 3, 4, 5);
+println(arr);
+println(len(arr));
+println(get(arr, 2));
+set(arr, 1, 10);
+println(arr);
+push(arr, 6);
+println(arr);
+println(pop(arr));
+println(arr);

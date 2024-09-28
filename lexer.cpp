@@ -118,7 +118,7 @@ Node *Lexer::read_token() {
 
   if (isalpha(c)) {
     Node *tok = read_continued_token(TOK_IDENTIFIER, lexeme, line, col, isalnum);
-    // TODO: use set_tag to change the token kind if it's actually a keyword
+    // use set_tag to change the token kind if it's actually a keyword
     if (tok->get_str() == "var") {
       tok->set_tag(TOK_VAR);
     }
@@ -156,7 +156,6 @@ Node *Lexer::read_token() {
       return token_create(TOK_RBRACE, lexeme, line, col);
     case ',':
       return token_create(TOK_COMMA, lexeme, line, col);
-    // TODO: add cases for other kinds of tokens
     case '=':
       {
         int next_c = read();
@@ -250,4 +249,3 @@ Node *Lexer::read_continued_token(enum TokenKind kind, const std::string &lexeme
   }
 }
 
-// TODO: implement additional member functions if necessary

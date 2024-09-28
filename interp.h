@@ -27,12 +27,24 @@ public:
   static Value intrinsic_println(Value args[], unsigned num_args,
                                      const Location &loc, Interpreter *interp);
   static Value intrinsic_readint(Value args[], unsigned num_args, const Location &loc, Interpreter *interp);
+  static Value intrinsic_mkarr(Value args[], unsigned num_args,
+                               const Location &loc, Interpreter *interp);
+  static Value intrinsic_len(Value args[], unsigned num_args,
+                             const Location &loc, Interpreter *interp);
+  static Value intrinsic_get(Value args[], unsigned num_args,
+                             const Location &loc, Interpreter *interp);
+  static Value intrinsic_set(Value args[], unsigned num_args,
+                             const Location &loc, Interpreter *interp);
+  static Value intrinsic_push(Value args[], unsigned num_args,
+                              const Location &loc, Interpreter *interp);
+  static Value intrinsic_pop(Value args[], unsigned num_args,
+                             const Location &loc, Interpreter *interp);
+
 
 
 
 
 private:
-  // TODO: private member functions
   void analyze_node(Node *node, std::set<std::string>& defined_vars);
   Value evaluate_node(Node *node, Environment &env);
 };

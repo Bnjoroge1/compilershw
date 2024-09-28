@@ -11,9 +11,7 @@ Environment::Environment(Environment *parent)
 Environment::~Environment() {
 }
 
-// TODO: implement member functions
 void Environment::define(const std::string& name, const Value& value) {
-    
     variables[name] = value;
 
 }

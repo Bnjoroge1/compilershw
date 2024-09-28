@@ -5,6 +5,7 @@
 #include <string>
 class ValRep;
 class Function;
+class Array;
 
 enum ValueKind {
   // "atomic" values
@@ -15,7 +16,7 @@ enum ValueKind {
   // dynamic values: these have an associated dynamically-allocated
   // object (drived from ValRep)
   VALUE_FUNCTION,
-  // could add other kinds of dynamic values here
+  VALUE_ARRAY,
 };
 
 // Typedef of the signature of an intrinsic function.
@@ -48,6 +49,7 @@ public:
   Value(int ival = 0);
   Value(Function *fn);
   Value(IntrinsicFn intrinsic_fn);
+  Value(Array *array);
   Value(const Value &other);
   ~Value();
 
@@ -81,15 +83,17 @@ public:
     return m_atomic.intrinsic_fn;
   }
 
-  // convert to a string representation
-  std::string as_str() const;
+  
 
   bool is_numeric() const { return m_kind == VALUE_INT; }
   bool is_dynamic() const { return m_kind >= VALUE_FUNCTION; }
   bool is_atomic() const  { return !is_dynamic(); }
+  bool is_array() const { return m_kind == VALUE_ARRAY; }
+  Array *get_array() const;
+  // convert to a string representation
+  std::string as_str() const;
 
 private:
-  // TODO: add additional member functions, if necessary
 };
 
 #endif // VALUE_H

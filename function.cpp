@@ -11,4 +11,3 @@ Function::Function(const std::string &name, const std::vector<std::string> &para
 Function::~Function() {
 }
 
-// TODO: implement member functions
