@@ -73,6 +73,7 @@ void Interpreter::analyze_node(Node *node, std::set<std::string>& defined_vars) 
             if (defined_vars.find(var_name) == defined_vars.end() && intrinsic_functions.find(var_name) == intrinsic_functions.end()) {
                 //checking if the variable is not defined in the current scope or intrinsic functions
                 const Location& loc = node->get_loc();
+                
                 std::string error_msg = "input/" + loc.get_srcfile() + ":" +
                                         std::to_string(loc.get_line()) + ":" +
                                         std::to_string(loc.get_col()) +
@@ -421,11 +422,11 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
             if (func_val.get_kind() == VALUE_FUNCTION) {
                 Function *func = func_val.get_function();
                 expected_args = func->get_num_params();
-
-
+                const Location& loc = node->get_loc();
+                
                 // Check number of arguments
                 if (args.size() != expected_args) {
-                    EvaluationError::raise(node->get_loc(), 
+                    EvaluationError::raise(loc, 
                         "Incorrect number of arguments for function '%s': expected %u, got %zu", 
                         func_name.c_str(), expected_args, args.size());
                 }
@@ -438,6 +439,7 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
                 for (unsigned i = 0; i < args.size(); ++i) {
                     call_env.define(func->get_params()[i], args[i]);
                 }
+                //error: figure out how ot print the source location. 
 
                 // Evaluate function body
                 Node* body = func->get_body();
@@ -531,7 +533,9 @@ Value Interpreter::intrinsic_println(Value args[], unsigned num_args,
 
 Value Interpreter::intrinsic_readint(Value args[], unsigned num_args, const Location &loc, Interpreter *interp) {
     //read an integer from the standard input
-    
+    if (num_args != 0) {
+        EvaluationError::raise(loc, "readint function does not accept any arguments");
+    }
     
     int input;
     if (scanf("%d", &input) != 1) {

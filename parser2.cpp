@@ -95,6 +95,7 @@ Node *Parser2::parse_TStmt() {
 Node *Parser2::parse_If_Stmt() {
 
     Node *if_stmt = new Node(AST_IF);
+    if_stmt->set_loc(if_stmt->get_loc());
     
     expect(TOK_IF);
     expect(TOK_LPAREN);
@@ -141,6 +142,7 @@ Node *Parser2::parse_While_Stmt() {
     expect(TOK_RBRACE);
     
     Node *while_stmt = new Node(AST_WHILE);
+    while_stmt->set_loc(while_stmt->get_loc());
     while_stmt->append_kid(condition);
     while_stmt->append_kid(body);
     
@@ -148,7 +150,7 @@ Node *Parser2::parse_While_Stmt() {
 }
 Node *Parser2::parse_Func() {
     Node *func_def = new Node(AST_FUNCTION);
-    
+    func_def->set_loc(func_def->get_loc());
     expect(TOK_FUNCTION);
     Node *func_name = expect(TOK_IDENTIFIER);
     // a VARREF node for the function name
@@ -171,6 +173,7 @@ Node *Parser2::parse_Func() {
 
 Node *Parser2::parse_SList() {
     Node *stmt_list = new Node(AST_STATEMENT_LIST);
+    stmt_list->set_loc(stmt_list->get_loc());
     while (m_lexer->peek()->get_tag() != TOK_RBRACE) {
         stmt_list->append_kid(parse_Stmt());
     }
@@ -187,9 +190,13 @@ Node *Parser2::parse_A() {
     if (first_tok->get_tag() == TOK_IDENTIFIER && second_tok->get_tag() == TOK_ASSIGN) {
         Node *assign = new Node(AST_ASSIGN);
         Node *lhs = new Node(AST_VARREF);
+
         lhs->set_str(expect(TOK_IDENTIFIER)->get_str());
+        lhs->set_loc(first_tok->get_loc());
+
         expect(TOK_ASSIGN);
         Node *rhs = parse_A();
+        assign->set_loc(first_tok->get_loc());
         assign->append_kid(lhs);
         assign->append_kid(rhs);
         return assign;
@@ -207,10 +214,12 @@ Node *Parser2::parse_L() {
             m_lexer->next(); // consume '||'
             Node *right = parse_R();
             l = new Node(AST_LOGICAL_OR, {l, right});
+            l->set_loc(next_tok->get_loc());
         } else if (next_tok->get_tag() == TOK_LOGICAL_AND) {
             m_lexer->next(); // consume '&&'
             Node *right = parse_R();
             l = new Node(AST_LOGICAL_AND, {l, right});
+            l->set_loc(next_tok->get_loc());
         }
     }
     
@@ -239,6 +248,7 @@ Node *Parser2::parse_R() {
         default: assert(false);
       }
       e = new Node(ast_tag, {e, right});
+      e->set_loc(next_tok->get_loc());
     } else {
       break;
     }
@@ -248,6 +258,7 @@ Node *Parser2::parse_R() {
 Node *Parser2::parse_E() {
   Node *t = parse_T();
   Node *result = parse_EPrime(t);
+  result->set_loc(t->get_loc());
   return result;
 }
 
@@ -278,6 +289,7 @@ Node *Parser2::parse_EPrime(Node *ast_) {
 
       // copy source information from operator node
       ast->set_loc(op->get_loc());
+      ast->set_loc(next_tok->get_loc());
 
       // continue recursively
       return parse_EPrime(ast.release());
@@ -339,16 +351,18 @@ Node *Parser2::parse_F() {
     m_lexer->next();  
     Node *node = new Node(AST_INT_LITERAL);
     node->set_str(tok->get_str());
+    node->set_loc(tok->get_loc());
     return node;
   } else if (tok->get_tag() == TOK_IDENTIFIER) {
     m_lexer->next();  
     Node *node = new Node(AST_VARREF);
     node->set_str(tok->get_str());
-    
+    node->set_loc(tok->get_loc());
     // Check if this is a function call
     if (m_lexer->peek()->get_tag() == TOK_LPAREN) {
       Node *func_call = new Node(AST_FNCALL);
       func_call->append_kid(node);  // Use the VARREF as the function name
+      func_call->set_loc(tok->get_loc());
       expect(TOK_LPAREN);
       func_call->append_kid(parse_OptArgList());
       expect(TOK_RPAREN);
@@ -360,14 +374,16 @@ Node *Parser2::parse_F() {
     m_lexer->next();  
     Node *node = parse_A();
     expect(TOK_RPAREN);
+    node->set_loc(tok->get_loc());
     return node;
   } else {
-    error_at_current_loc("Unexpected token in factor");
+    EvaluationError::raise(tok->get_loc(), "Unexpected token in factor");
     return nullptr;
   }
 }
 Node *Parser2::parse_OptPList() {
     Node *param_list = new Node(AST_PARAMETER_LIST);
+    param_list->set_loc(param_list->get_loc());
     if (m_lexer->peek()->get_tag() != TOK_RPAREN) {
         param_list = parse_PList();
     }
@@ -384,6 +400,7 @@ Node *Parser2::parse_PList() {
         if (m_lexer->peek()->get_tag() != TOK_COMMA) break;
         expect(TOK_COMMA);
     } while (true);
+    param_list->set_loc(param_list->get_kid(0)->get_loc());
     return param_list;
 }
 
@@ -398,6 +415,7 @@ Node *Parser2::parse_OptArgList() {
 
 Node *Parser2::parse_ArgList() {
     Node *arg_list = new Node(AST_ARGLIST);
+    arg_list->set_loc(arg_list->get_loc());
     do {
         arg_list->append_kid(parse_L());
         if (m_lexer->peek()->get_tag() != TOK_COMMA) break;

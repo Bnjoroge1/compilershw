@@ -1,8 +1,5 @@
-var x;
-x = 10;
-
-function f(x) {
-    x + 1;  
+function add(x) {
+  x + y;
 }
 
-f(20);
+add(41, 79);
