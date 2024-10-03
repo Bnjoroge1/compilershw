@@ -36,6 +36,7 @@ void Interpreter::analyze_node(Node *node, std::set<std::string>& defined_vars) 
 
     switch (node->get_tag()) {
           case AST_FUNCTION: {
+
             // Add the function name to defined_vars
             Node* func_name_node = node->get_kid(0);
             if (func_name_node != nullptr) {
@@ -43,7 +44,7 @@ void Interpreter::analyze_node(Node *node, std::set<std::string>& defined_vars) 
             }
             
             // Create a new set for the function's scope
-            std::set<std::string> function_vars = defined_vars;
+            std::set<std::string> function_vars;
             
             // Add parameters to the function's scope
             Node* params = node->get_kid(1);
@@ -390,7 +391,7 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
             Node *body = node->get_kid(2);
             // Create a new environment for the function
             Environment* func_env = new Environment(&env);
-            Function *func = new Function(func_name, param_names, func_env, body);
+            Function *func = new Function(func_name, param_names, &env, body);
             Value func_val = Value(func);
             m_functions.push_back(func);  
             env.define(func_name, func_val);
@@ -413,14 +414,17 @@ Value Interpreter::evaluate_node(Node *node, Environment &env) {
                         
 
             
+            unsigned expected_args = 0;
             if (func_val.get_kind() == VALUE_FUNCTION) {
                 Function *func = func_val.get_function();
+                expected_args = func->get_num_params();
+
 
                 // Check number of arguments
-                if (args.size() != func->get_num_params()) {
+                if (args.size() != expected_args) {
                     EvaluationError::raise(node->get_loc(), 
                         "Incorrect number of arguments for function '%s': expected %u, got %zu", 
-                        func_name.c_str(), func->get_num_params(), args.size());
+                        func_name.c_str(), expected_args, args.size());
                 }
                     
 
@@ -539,6 +543,7 @@ Value Interpreter::intrinsic_readint(Value args[], unsigned num_args, const Loca
 
 Value Interpreter::intrinsic_mkarr(Value args[], unsigned num_args,
                                    const Location &loc, Interpreter *interp) {
+    
     //create a new array with the given values
     Array* new_array = new Array();
     for (unsigned i = 0; i < num_args; ++i) {
