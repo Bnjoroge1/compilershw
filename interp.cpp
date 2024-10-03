@@ -58,7 +58,9 @@ void Interpreter::analyze_node(Node *node, std::set<std::string>& defined_vars) 
                                             ": Error: Parameter '" + param_name + "' is already defined";
                     SemanticError::raise(loc, error_msg.c_str());
                 }
-                function_vars.insert(param_name);
+                std::set<std::string> combined_vars = defined_vars;
+                combined_vars.insert(function_vars.begin(), function_vars.end());
+                //function_vars.insert(param_name);
             }
             
             // Analyze the function body with the new scope
