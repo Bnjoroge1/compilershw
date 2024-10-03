@@ -516,7 +516,7 @@ Value Interpreter::intrinsic_print(Value args[], unsigned num_args,
         EvaluationError::raise(loc, "Wrong number of arguments passed to print function");
     }
     printf("%s", args[0].as_str().c_str());
-    fflush(stdout);  // Ensure output is immediately visible
+    //fflush(stdout);  // Ensure output is immediately visible
     return Value(0);  
 }
 Value Interpreter::intrinsic_println(Value args[], unsigned num_args,
