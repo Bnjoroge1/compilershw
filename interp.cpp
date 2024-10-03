@@ -61,6 +61,7 @@ void Interpreter::analyze_node(Node *node, std::set<std::string>& defined_vars) 
                 
                 function_vars.insert(param_name);
             }
+            //creating a new set that combines the defined_vars and the function_vars
             std::set<std::string> combined_vars = defined_vars;
             combined_vars.insert(function_vars.begin(), function_vars.end());
             // Analyze the function body with the new scope
@@ -70,7 +71,7 @@ void Interpreter::analyze_node(Node *node, std::set<std::string>& defined_vars) 
         case AST_VARREF: {
             std::string var_name = node->get_str();
             if (defined_vars.find(var_name) == defined_vars.end() && intrinsic_functions.find(var_name) == intrinsic_functions.end()) {
-                
+                //checking if the variable is not defined in the current scope or intrinsic functions
                 const Location& loc = node->get_loc();
                 std::string error_msg = "input/" + loc.get_srcfile() + ":" +
                                         std::to_string(loc.get_line()) + ":" +
@@ -524,7 +525,7 @@ Value Interpreter::intrinsic_println(Value args[], unsigned num_args,
     EvaluationError::raise(loc, "Wrong number of arguments passed to println function");
   }
   printf("%s\n", args[0].as_str().c_str());
-  fflush(stdout);  // Ensure output is immediately visible
+  //fflush(stdout);  // Ensure output is immediately visible
   return Value(0);  
 }
 
